@@ -1,0 +1,22 @@
+{
+  "name": "primeira-api",
+  "version": "1.0.0",
+  "description": "Nossa primeira API",
+  "keywords": [
+    "primeira",
+    "api"
+  ],
+  "license": "ISC",
+  "author": "Isaac Amorim",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "start:dev": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7"
+  }
+}
