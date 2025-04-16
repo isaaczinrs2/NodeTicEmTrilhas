@@ -40,7 +40,7 @@ function iniciaServidorHttp(conteudo) {
         rotas(req, res, { conteudo });
     });
 
-    const porta = 3001;
+    const porta = 3002;
     const host = 'localhost';
 
     servidor.listen(porta, host, () => {
