@@ -2,23 +2,16 @@ import http from 'http';
 import fs from 'fs';
 import rotas from './routes.js';
 import sqlite3 from 'sqlite3';
-import { sequelize, criaProduto, leProdutos } from './models.js';
-
+import { sequelize, Produto, criaProduto, leProdutos, leProdutosPorId, atualizaProdutosPorId, deletaProdutosPorId } from './models.js';
 
 const db = new sqlite3.Database('./tic.db', (erro) => {
     if (erro) {
         console.log('Erro ao conectar ao banco de dados', erro);
-
     }
     console.log('Banco de dados conectado com sucesso');
 });
 
-fs.writeFileSync('./mensagem.txt', 'Olá, TIC em Trilhas do arquivo!', 'utf-8', (erro) => {
-    if (erro) {
-        console.log('Falha ao escrever o arquivo', erro);
-    }
-    console.log('Arquivo criado com sucesso');
-});
+fs.writeFileSync('./mensagem.txt', 'Olá, TIC em Trilhas do arquivo!', 'utf-8');
 
 fs.readFile('./mensagem.txt', 'utf-8', (erro, conteudo) => {
     if (erro) {
@@ -38,12 +31,40 @@ async function iniciaServidorHttp(conteudo) {
             console.log('Erro ao sincronizar o banco de dados', erro);
         });
 
-    await criaProduto({ nome: 'Acaí Tradicional', preco: 10.0 });
-    await criaProduto({ nome: 'Açaí com Granola', preco: 20.0 });
 
+        await Produto.findOrCreate({
+            where: { nome: 'Acaí Tradicional' },
+            defaults: { preco: 10 }
+          });
+          
+          await Produto.findOrCreate({
+            where: { nome: 'Acaí com Granola' },
+            defaults: { preco: 20 }
+          });
+
+          await Produto.findOrCreate({
+            where: { nome: 'Acaí Top' },
+            defaults: { preco: 10 }
+          });
+          
+          
+          
+
+    // Exibe os produtos no terminal
     const produtos = await leProdutos();
-    console.log(produtos); 
+        console.log(produtos);
 
+        await leProdutosPorId(1);
+        await leProdutosPorId(20);
+        await atualizaProdutosPorId(2, { preco: 15 });
+        await deletaProdutosPorId(4);
+
+    // Agora sim, novo log atualizado:
+    const produtosAtualizados = await leProdutos();
+    console.log(produtosAtualizados);
+
+
+      
     const servidor = http.createServer((req, res) => {
         rotas(req, res, { conteudo });
     });
@@ -55,4 +76,3 @@ async function iniciaServidorHttp(conteudo) {
         console.log(`Servidor executado em http://${host}:${porta}/`);
     });
 }
-

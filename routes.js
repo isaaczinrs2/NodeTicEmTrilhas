@@ -129,7 +129,7 @@ export default function rotas(req, res, dado) {
         return;
     }
 
-    // Agora sim, só entra aqui se nenhuma rota foi atendida
+    // Só entra aqui se nenhuma rota foi atendida
     res.statusCode = 404;
     res.end(JSON.stringify({
         erro: {
