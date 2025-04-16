@@ -2,14 +2,8 @@ import http from 'http';
 import fs from 'fs';
 import rotas from './routes.js';
 import sqlite3 from 'sqlite3';
-import { Sequelize } from 'sequelize';
+import { sequelize, criaProduto, leProdutos } from './models.js';
 
-const sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage : './tic.db'
-});
-
-sequelize.authenticate()
 
 const db = new sqlite3.Database('./tic.db', (erro) => {
     if (erro) {
@@ -35,7 +29,21 @@ fs.readFile('./mensagem.txt', 'utf-8', (erro, conteudo) => {
     iniciaServidorHttp(conteudo);
 });
 
-function iniciaServidorHttp(conteudo) {
+async function iniciaServidorHttp(conteudo) {
+    await sequelize.sync()
+        .then(() => {
+            console.log('Banco de dados sincronizado com sucesso!');
+        })
+        .catch((erro) => {
+            console.log('Erro ao sincronizar o banco de dados', erro);
+        });
+
+    await criaProduto({ nome: 'Acaí Tradicional', preco: 10.0 });
+    await criaProduto({ nome: 'Açaí com Granola', preco: 20.0 });
+
+    const produtos = await leProdutos();
+    console.log(produtos); 
+
     const servidor = http.createServer((req, res) => {
         rotas(req, res, { conteudo });
     });
@@ -47,3 +55,4 @@ function iniciaServidorHttp(conteudo) {
         console.log(`Servidor executado em http://${host}:${porta}/`);
     });
 }
+
