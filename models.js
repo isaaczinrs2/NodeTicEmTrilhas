@@ -25,53 +25,54 @@ export const Produto = sequelize.define('produto', {
 });
 
 export async function criaProduto(produto) {
-    return await Produto.create(produto)
-        .then(() => {
-            console.log('Produto criado com sucesso!');
-        })
-        .catch((erro) => {
+        try {
+            const resultado = await Produto.create(produto);
+            console.log(`O produto ${resultado.nome} foi criado com sucesso!`);
+            return resultado;
+        } catch (erro) {
             console.log('Erro ao criar produto', erro);
-        });
-}
+            throw erro;
+        }
+    }
+    
 
 export async function leProdutos(){
-    return await Produto.findAll()
-        .then((produtos) => {
-            console.log('Produtos encontrados com sucesso!');
-            return produtos;
-        })
-        .catch((erro) => {
-            console.log('Erro ao encontrar produtos', erro);
-        });
+    try {
+        const produtos = await Produto.findAll();
+        console.log('Produtos consultados com sucesso!');
+        return produtos;
+    } catch (erro) {
+        console.log('Erro ao encontrar produtos', erro);
+        throw erro;
+    }
 }
 
 export async function leProdutosPorId(id) {
     try {
         const produto = await Produto.findByPk(id);
-        if (produto) {
-            console.log('Produto encontrado com sucesso!');
-            console.log(produto); 
-        } else {
-            console.log(`Nenhum produto encontrado com o ID ${id}`);
-        }
-        return produto;
+       conosole.log(`Produto consultado com sucesso!, resultado`);
+       return resultado;
+        
     } catch (erro) {
         console.log('Erro ao encontrar produto', erro);
+        throw erro;
     }
 }
 
+
 export async function atualizaProdutosPorId(id, dadosProduto) {
     try {
-        const produto = await Produto.update(dadosProduto, {where: { id:id } });
+        const resultado = await Produto.update(dadosProduto, {where: { id:id } });
         if (produto) {
-            console.log('Produto atualizado com sucesso!');
-            console.log(produto); 
+            console.log('Produto atualizado com sucesso!', resultado);
+            return resultado;
         } else {
             console.log(`Nenhum produto encontrado com o ID ${id}`);
         }
         return produto;
     } catch (erro) {
         console.log('Erro ao atualizar produto', erro);
+        throw erro;
     }
 }
 
@@ -87,5 +88,6 @@ export async function deletaProdutosPorId(id, ) {
         return produto;
     } catch (erro) {
         console.log('Erro ao deletar produto', erro);
+        throw erro;
     }
 }

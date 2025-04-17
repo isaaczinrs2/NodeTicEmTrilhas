@@ -2,7 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import rotas from './routes.js';
 import sqlite3 from 'sqlite3';
-import { sequelize, Produto, criaProduto, leProdutos, leProdutosPorId, atualizaProdutosPorId, deletaProdutosPorId } from './models.js';
+import { sequelize } from './models.js';
 
 const db = new sqlite3.Database('./tic.db', (erro) => {
     if (erro) {
@@ -30,38 +30,6 @@ async function iniciaServidorHttp(conteudo) {
         .catch((erro) => {
             console.log('Erro ao sincronizar o banco de dados', erro);
         });
-
-
-        await Produto.findOrCreate({
-            where: { nome: 'Acaí Tradicional' },
-            defaults: { preco: 10 }
-          });
-          
-          await Produto.findOrCreate({
-            where: { nome: 'Acaí com Granola' },
-            defaults: { preco: 20 }
-          });
-
-          await Produto.findOrCreate({
-            where: { nome: 'Acaí Top' },
-            defaults: { preco: 10 }
-          });
-          
-          
-          
-
-    // Exibe os produtos no terminal
-    const produtos = await leProdutos();
-        console.log(produtos);
-
-        await leProdutosPorId(1);
-        await leProdutosPorId(20);
-        await atualizaProdutosPorId(2, { preco: 15 });
-        await deletaProdutosPorId(4);
-
-    // Agora sim, novo log atualizado:
-    const produtosAtualizados = await leProdutos();
-    console.log(produtosAtualizados);
 
 
       
