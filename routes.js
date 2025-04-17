@@ -78,10 +78,15 @@ export default async function rotas(req, res, dado) {
         const dados = JSON.parse(Buffer.concat(corpo).toString());
         const resposta = await atualizaProdutosPorId(id, dados);
         res.statusCode = 200;
+        if (!resposta) {
+          res.statusCode = 404;
+          return res.end(JSON.stringify({ erro: { mensagem: 'Produto não encontrado' } }));
+        }
         return res.end(JSON.stringify(resposta));
+
       } catch (erro) {
         res.statusCode = 500;
-        return res.end(JSON.stringify({ erro: { mensagem: 'Erro ao atualizar produto' } }));
+        return res.end(JSON.stringify({ erro: { mensagem: 'Erro a atualizar produto' } }));
       }
     });
 
@@ -97,8 +102,13 @@ export default async function rotas(req, res, dado) {
     }
 
     try {
-      await deletaProdutosPorId(id);
+      const encontrado = await deletaProdutosPorId(id);
       res.statusCode = 204;
+      
+        if (!encontrado) {
+            res.statusCode = 404;
+        }
+        
       return res.end(); // sem corpo
     } catch (erro) {
       res.statusCode = 500;
@@ -106,41 +116,43 @@ export default async function rotas(req, res, dado) {
     }
   }
   
-    // GET /produtos
+
     
-  if (req.method === 'GET' && req.url.startsWith('/produtos/')) {
-    const id = parseInt(req.url.split('/')[2]);
-    if (isNaN(id)) {
-      res.statusCode = 400;
-      return res.end(JSON.stringify({ erro: { mensagem: 'ID inválido' } }));
-    }
 
-    try {
-      await leProdutosPorId(id);
-      res.statusCode = 200;
-      return res.end(JSON.stringify(resposta)); // sem corpo
-    } catch (erro) {
-      res.statusCode = 500;
-      return res.end(JSON.stringify({ erro: { mensagem: `Erro ao buscar produto ${id}` } }));
+    // GET /produtos — lista todos **/
+    if (req.method === 'GET' && req.url === '/produtos') {
+        try {
+        const todos = await leProdutos();
+        res.statusCode = 200;
+        return res.end(JSON.stringify(todos));
+        } catch (erro) {
+        res.statusCode = 500;
+        return res.end(JSON.stringify({ erro: { mensagem: 'Erro ao listar produtos' } }));
+        }
     }
-  }
-
-  if (req.method === 'GET' && req.url.startsWith('/produtos/')) {
-    const id = parseInt(req.url.split('/')[2]);
-    if (isNaN(id)) {
-      res.statusCode = 400;
-      return res.end(JSON.stringify({ erro: { mensagem: 'ID inválido' } }));
+    
+    // GET /produtos/:id — busca por ID **/
+    if (req.method === 'GET' && req.url.startsWith('/produtos/')) {
+        const id = parseInt(req.url.split('/')[2], 10);
+        if (isNaN(id)) {
+        res.statusCode = 400;
+        return res.end(JSON.stringify({ erro: { mensagem: 'ID inválido' } }));
+        }
+    
+        try {
+        const prod = await leProdutosPorId(id);
+        if (!prod) {
+            res.statusCode = 404;
+            return res.end(JSON.stringify({ erro: { mensagem: 'Produto não encontrado' } }));
+        }
+        res.statusCode = 200;
+        return res.end(JSON.stringify(prod));
+        } catch (erro) {
+        res.statusCode = 500;
+        return res.end(JSON.stringify({ erro: { mensagem: 'Erro ao buscar produto' } }));
+        }
     }
-
-    try {
-      await leProdutos(id);
-      res.statusCode = 200;
-      return res.end(JSON.stringify(resposta)); // sem corpo
-    } catch (erro) {
-      res.statusCode = 500;
-      return res.end(JSON.stringify({ erro: { mensagem: `Erro ao buscar produtos` } }));
-    }
-  }
+  
 
   // Rota não encontrada
   res.statusCode = 404;
