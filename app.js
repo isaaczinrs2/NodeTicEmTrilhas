@@ -2,7 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import rotas from './routes.js';
 import sqlite3 from 'sqlite3';
-import { sequelize } from './models.js';
+import { sequelize, criaPedido, lePedidos } from './models.js';
 
 const db = new sqlite3.Database('./tic.db', (erro) => {
     if (erro) {
@@ -31,8 +31,18 @@ async function iniciaServidorHttp(conteudo) {
             console.log('Erro ao sincronizar o banco de dados', erro);
         });
 
-
-      
+        await criaPedido({
+            valor_total: 100.00,
+            produtos: [
+              { id: 3, quantidade: 3, preco: 9.5 },
+              { id: 1, quantidade: 2, preco: 8.0 }
+            ]
+          });
+          
+          
+          const pedidos = await lePedidos();
+          console.log(JSON.stringify(pedidos, null, 2));
+    
     const servidor = http.createServer((req, res) => {
         rotas(req, res, { conteudo });
     });
