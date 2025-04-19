@@ -180,7 +180,7 @@ export async function lePedidoPorId(id) {
           return null;
       }
       
-      // Converte para JSON incluindo os produtos
+    
       const resultado = pedido.get({ plain: true });
       console.log('Pedido encontrado:', resultado);
       return resultado;
