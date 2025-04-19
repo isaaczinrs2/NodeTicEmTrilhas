@@ -1,14 +1,18 @@
 import sqlite3 from 'sqlite3';
 import express from 'express';
+import bodyParser from 'body-parser';  
 
 
 import { sequelize } from './models.js';
 
 const app = express();
 
-app.use((req, res, next ) => {
-    console.log(`Digite 9 para falar com o atendente`);
-    next();
+app.use(bodyParser.json());
+
+
+app.use('/produtos', (req, res, next ) => {
+    console.log(`Rota /produtos`);
+    res.send();
 });
 
 app.use((req, res, next ) => {
@@ -18,9 +22,7 @@ app.use((req, res, next ) => {
     });
 });
 
-app.use((req, res, next ) => {
-    console.log(`Segue o link para baixar o driver atualizado`);
-}); 
+
 
 async function inicializaApp() {
 
