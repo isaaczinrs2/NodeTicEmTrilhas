@@ -46,7 +46,7 @@ export async function criaProduto(produto) {
 
 export async function leProdutos() {
   try {
-    const produtos = await ProdutosPedido.findAll();
+    const produtos = await Produto.findAll();
     console.log('Produtos consultados com sucesso!');
     return produtos;
   } catch (erro) {
@@ -104,61 +104,88 @@ export async function deletaProdutosPorId(id) {
 
 // Funções de CRUD para Pedido
 export async function criaPedido(novoPedido) {
+  const transaction = await sequelize.transaction();
   try {
-    const pedido = await Pedido.create({
-      valor_total: novoPedido.valor_total,
-      estado: 'Encaminhado'
-    });
+      // Cria o pedido
+      const pedido = await Pedido.create({
+          valor_total: novoPedido.valorTotal,
+          estado: 'Encaminhado'
+      }, { transaction });
 
-    for (const prod of novoPedido.produtos) {
-      const produto = await Produto.findByPk(prod.id);
-      if (produto) {
-        await pedido.addProduto(produto, {
-          through: { quantidade: prod.quantidade, preco: prod.preco }
-        });
-        console.log(`Produto ${produto.id} adicionado ao pedido ${pedido.id}`);
+      // Processa cada produto
+      for (const prod of novoPedido.produtos) {
+          const produto = await Produto.findByPk(prod.id, { transaction });
+          if (!produto) {
+              throw new Error(`Produto com ID ${prod.id} não encontrado`);
+          }
+          
+          // Usa o preço do produto do banco de dados se não foi fornecido
+          const preco = produto.preco;
+          
+          await pedido.addProduto(produto, {
+              through: { 
+                  quantidade: prod.quantidade,
+                  preco: preco
+              },
+              transaction
+          });
       }
-    }
 
-    return pedido;
+      await transaction.commit();
+      return pedido;
   } catch (erro) {
-    console.log('Erro ao criar pedido', erro);
-    throw erro;
+      await transaction.rollback();
+      console.error('Erro na criação do pedido:', erro);
+      throw erro;
   }
 }
 
 
-export async function lePedidos() {
-    try {
+
+export async function lePedido() {
+  try {
       const pedidos = await Pedido.findAll({
-        include: {
-          model: Produto,
-          through: {  
-            attributes: ['quantidade','preco']
-          }
-        }
+          include: {
+              model: Produto,
+              through: {
+                  attributes: ['quantidade', 'preco']
+              }
+          },
+          raw: true,  
+          nest: true  
       });
-      console.log('Pedidos consultados com sucesso!');
+      
+      console.log('Pedidos consultados:', JSON.stringify(pedidos, null, 2));
       return pedidos;
-    } catch (erro) {
-      console.log('Erro ao encontrar pedidos', erro);
+  } catch (erro) {
+      console.error('Erro detalhado:', erro);
       throw erro;
-    }
   }
+}
   
 
 export async function lePedidoPorId(id) {
   try {
-    const pedido = await Pedido.findByPk(id, { include: Produto });
-    if (pedido) {
-      console.log('Pedido consultado com sucesso!', pedido);
-      return pedido;
-    } else {
-      console.log(`Nenhum pedido encontrado com o ID ${id}`);
-      return null;
-    }
+      const pedido = await Pedido.findByPk(id, {
+          include: {
+              model: Produto,
+              through: {
+                  attributes: ['quantidade', 'preco']
+              }
+          }
+      });
+      
+      if (!pedido) {
+          console.log(`Pedido ${id} não encontrado`);
+          return null;
+      }
+      
+      // Converte para JSON incluindo os produtos
+      const resultado = pedido.get({ plain: true });
+      console.log('Pedido encontrado:', resultado);
+      return resultado;
   } catch (erro) {
-    console.log('Erro ao encontrar pedido', erro);
-    throw erro;
+      console.error('Erro detalhado:', erro);
+      throw erro;
   }
 }

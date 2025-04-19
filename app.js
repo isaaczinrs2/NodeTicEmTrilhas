@@ -1,28 +1,17 @@
 import sqlite3 from 'sqlite3';
 import express from 'express';
 import bodyParser from 'body-parser';  
-
-
 import { sequelize } from './models.js';
+import { rotasProdutos } from './routes/produtos.js';
+import { rotasPedidos } from './routes/pedidos.js';
 
 const app = express();
 
 app.use(bodyParser.json());
 
 
-app.use('/produtos', (req, res, next ) => {
-    console.log(`Rota /produtos`);
-    res.send();
-});
-
-app.use((req, res, next ) => {
-    console.log(`Problema resolvido`);
-    res.send({
-        mensagem: 'Problema resolvido'
-    });
-});
-
-
+app.use(rotasProdutos);
+app.use(rotasPedidos);
 
 async function inicializaApp() {
 
@@ -44,7 +33,9 @@ async function inicializaApp() {
 
     const porta = 3002;
     
-    app.listen(porta);
+    app.listen(porta , () => {
+        console.log(`Servidor rodando na porta ${porta}`);
+    });
 
   
 }
